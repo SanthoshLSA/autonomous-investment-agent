@@ -83,9 +83,9 @@ backtest:
 
 # ─── LLM Configuration ──────────────────────────────────────────────────────
 llm:
-  provider: ollama                # ollama (free/local) or openai (paid/cloud)
-  model: "llama3.1:8b"            # Ollama model name
-  fallback_model: "qwen2.5:7b"   # Backup model if primary fails
+  provider: openai                # ollama (free/local) or openai (paid/cloud)
+  model: "gpt-4o-mini"            # OpenAI model name
+  fallback_model: "gpt-4o"        # Backup model if primary fails
   temperature: 0                  # Deterministic outputs
   max_retries: 3                  # Retry on LLM failures
   timeout_seconds: 120            # Max wait per LLM call
