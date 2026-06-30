@@ -190,8 +190,16 @@ def generate_html_report(
                     <div>Active Watchlist Assets</div>
                     <div class="stat-val">""" + str(len(state_data.get("composite_scores", {}))) + """</div>
                 </div>
-            </div>
-            <p>""" + state_data.get("portfolio_recommendation", {}).get("portfolio_summary", "No summary provided.") + """</p>
+            </div>"""
+    recomm = state_data.get("portfolio_recommendation", {})
+    summary_data = recomm.get("portfolio_summary", "No summary provided.")
+    if isinstance(summary_data, dict):
+        summary_html = "<br>".join(f"<strong>{str(k).replace('_', ' ').title()}</strong>: {str(v)}" for k, v in summary_data.items())
+    else:
+        summary_html = str(summary_data)
+
+    html_template += f"""
+            <p>{summary_html}</p>
         </div>
 
         <!-- 2. Allocations & Allocation Rationale -->
@@ -205,16 +213,21 @@ def generate_html_report(
                             <th>Allocation</th>
                         </tr>
                     </thead>
-                    <tbody>
-    """
+                    <tbody>"""
     
     recomm = state_data.get("portfolio_recommendation", {})
     allocations = recomm.get("allocations", {})
     for ticker, weight in allocations.items():
+        try:
+            weight_val = float(weight)
+            weight_str = f"{weight_val:+.2%}"
+        except (ValueError, TypeError):
+            weight_str = str(weight)
+            
         html_template += f"""
                         <tr>
                             <td><strong>{ticker}</strong></td>
-                            <td style="color: var(--accent); font-weight: 600;">{weight:+.2%}</td>
+                            <td style="color: var(--accent); font-weight: 600;">{weight_str}</td>
                         </tr>
         """
 
@@ -230,7 +243,7 @@ def generate_html_report(
     
     rationales = recomm.get("rationale", {})
     for ticker, text in rationales.items():
-        html_template += f"<li><strong>{ticker}</strong>: {text}</li>"
+        html_template += f"<li><strong>{ticker}</strong>: {str(text)}</li>"
 
     html_template += """
                 </ul>
@@ -267,14 +280,33 @@ def generate_html_report(
         elif "sell" in signal:
             badge_cls = "badge-sell"
 
+        # Format float metrics safely
+        try:
+            rsi_val = float(tech.get("rsi_value", 50.0))
+            rsi_str = f"{rsi_val:.1f}"
+        except (ValueError, TypeError):
+            rsi_str = str(tech.get("rsi_value", "50.0"))
+
+        try:
+            sharpe_val = float(risk.get("sharpe_ratio", 0.0))
+            sharpe_str = f"{sharpe_val:.2f}"
+        except (ValueError, TypeError):
+            sharpe_str = str(risk.get("sharpe_ratio", "0.00"))
+
+        try:
+            sent_val = float(sent.get("weighted_sentiment", 0.0))
+            sent_str = f"{sent_val:+.2f}"
+        except (ValueError, TypeError):
+            sent_str = str(sent.get("weighted_sentiment", "+0.00"))
+
         html_template += f"""
                     <tr>
                         <td><strong>{ticker}</strong></td>
-                        <td><span class="badge {badge_cls}">{signal.upper()}</span></td>
-                        <td>{score["risk_score"]}/100</td>
-                        <td>{tech.get("rsi_value", 50.0):.1f}</td>
-                        <td>{risk.get("sharpe_ratio", 0.0):.2f}</td>
-                        <td>{sent.get("weighted_sentiment", 0.0):+.2f} ({sent.get("classification", "neutral").upper()})</td>
+                        <td><span class="badge {badge_cls}">{str(signal).upper()}</span></td>
+                        <td>{str(score["risk_score"])}/100</td>
+                        <td>{rsi_str}</td>
+                        <td>{sharpe_str}</td>
+                        <td>{sent_str} ({str(sent.get("classification", "neutral")).upper()})</td>
                     </tr>
         """
 
@@ -291,7 +323,7 @@ def generate_html_report(
     
     warnings = recomm.get("warnings", [])
     for warn in warnings:
-        html_template += f"<li>{warn}</li>"
+        html_template += f"<li>{str(warn)}</li>"
         
     html_template += """
             </ul>
