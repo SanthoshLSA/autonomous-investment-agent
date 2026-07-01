@@ -49,8 +49,117 @@ if "approval_pending" not in st.session_state:
     st.session_state.approval_pending = False
 
 
+# Custom CSS to match santhoshlsa.vercel.app visual layout
+custom_css = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap');
+
+/* Main layout background & fonts */
+.stApp {
+    background: radial-gradient(circle at 10% 20%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                #07040d !important;
+    font-family: 'Outfit', sans-serif !important;
+    color: #f8fafc !important;
+}
+
+/* Headings styling */
+h1, h2, h3, h4, h5, h6, [data-testid="stHeader"] {
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    text-transform: uppercase !important;
+}
+
+/* Sidebar styling */
+[data-testid="stSidebar"] {
+    background-color: #0c0816 !important;
+    border-right: 1px solid rgba(168, 85, 247, 0.15) !important;
+}
+
+/* Buttons styling */
+.stButton>button {
+    background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.12em !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 2rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.25) !important;
+    width: 100% !important;
+}
+
+.stButton>button:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.45) !important;
+    border-color: rgba(168, 85, 247, 0.5) !important;
+}
+
+/* Glassmorphic Cards */
+div[data-testid="stMetric"], .stAlert {
+    background: rgba(12, 8, 22, 0.6) !important;
+    border: 1px solid rgba(168, 85, 247, 0.15) !important;
+    border-radius: 16px !important;
+    padding: 1.5rem !important;
+    backdrop-filter: blur(12px) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Selectbox / Multiselect styling */
+div[data-baseweb="select"] {
+    background-color: rgba(12, 8, 22, 0.8) !important;
+    border-radius: 12px !important;
+}
+
+/* Tabs styling */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 8px !important;
+    background-color: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-weight: 600 !important;
+    color: #94a3b8 !important;
+    background-color: rgba(255, 255, 255, 0.01) !important;
+    border: 1px solid rgba(255, 255, 255, 0.03) !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 10px 20px !important;
+    transition: all 0.2s ease !important;
+}
+
+.stTabs [aria-selected="true"] {
+    color: #a855f7 !important;
+    border-bottom: 2px solid #a855f7 !important;
+    background-color: rgba(168, 85, 247, 0.1) !important;
+}
+
+/* Text elements custom highlights */
+.stMarkdown p {
+    color: #cbd5e1 !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+}
+
+/* Gradient heading highlight */
+.gradient-header {
+    background: linear-gradient(to right, #a855f7, #ffffff, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 800;
+}
+</style>
+"""
+st.markdown(custom_css, unsafe_allow_html=True)
+
 # ── Title & Sidebar ──────────────────────────────────────────────────────────
-st.title("📈 Autonomous Investment Adviser Desk")
+st.markdown('<h1 class="gradient-header">📈 AUTONOMOUS INVESTMENT ADVISER DESK</h1>', unsafe_allow_html=True)
 st.markdown("---")
 
 # Setup sidebar controls

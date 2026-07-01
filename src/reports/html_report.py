@@ -36,18 +36,18 @@ def generate_html_report(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autonomous Investment Research Report</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0F172A;
-            --bg-secondary: #1E293B;
-            --accent: #38BDF8;
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8;
-            --success: #34D399;
-            --warning: #FBBF24;
-            --danger: #F87171;
-            --card-border: rgba(255, 255, 255, 0.05);
+            --bg-primary: #07040d;
+            --bg-secondary: #0c0816;
+            --accent: #a855f7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --card-border: rgba(168, 85, 247, 0.15);
         }
         * {
             box-sizing: border-box;
@@ -55,11 +55,13 @@ def generate_html_report(
             padding: 0;
         }
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-primary);
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at 10% 20%, rgba(168, 85, 247, 0.06) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
+                        var(--bg-primary);
             color: var(--text-main);
             line-height: 1.6;
-            padding: 2rem;
+            padding: 3rem 2rem;
         }
         header {
             max-width: 1200px;
@@ -68,13 +70,22 @@ def generate_html_report(
             padding-bottom: 1.5rem;
         }
         header h1 {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 2.5rem;
-            color: var(--text-main);
-            font-weight: 700;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #a855f7, #ffffff, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         header p {
             color: var(--text-muted);
             font-size: 1.1rem;
+            text-transform: uppercase;
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: 0.05em;
+            margin-top: 0.5rem;
         }
         .container {
             max-width: 1200px;
@@ -84,19 +95,23 @@ def generate_html_report(
             gap: 2rem;
         }
         .card {
-            background-color: var(--bg-secondary);
+            background-color: rgba(12, 8, 22, 0.6);
             border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 16px;
+            padding: 2.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
         }
         .card-title {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 1.5rem;
             margin-bottom: 1.5rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--accent);
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.75rem;
         }
         .grid-2 {
             display: grid;
@@ -117,13 +132,14 @@ def generate_html_report(
         .stat-box {
             flex: 1;
             min-width: 200px;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.01);
             padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
             text-align: center;
         }
         .stat-val {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 2rem;
             font-weight: 700;
             color: var(--accent);
@@ -137,22 +153,28 @@ def generate_html_report(
         th, td {
             text-align: left;
             padding: 1rem;
-            border-bottom: 1px solid var(--card-border);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         th {
+            font-family: 'Space Grotesk', sans-serif;
             color: var(--text-muted);
-            font-weight: 600;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
         }
         .badge {
+            font-family: 'Space Grotesk', sans-serif;
             display: inline-block;
             padding: 0.25rem 0.75rem;
             border-radius: 9999px;
             font-size: 0.85rem;
-            font-weight: 600;
+            font-weight: 700;
+            text-transform: uppercase;
         }
-        .badge-buy { background-color: rgba(52, 211, 153, 0.2); color: var(--success); }
-        .badge-hold { background-color: rgba(251, 191, 36, 0.2); color: var(--warning); }
-        .badge-sell { background-color: rgba(248, 113, 113, 0.2); color: var(--danger); }
+        .badge-buy { background-color: rgba(52, 211, 153, 0.15); color: var(--success); border: 1px solid rgba(52, 211, 153, 0.3); }
+        .badge-hold { background-color: rgba(251, 191, 36, 0.15); color: var(--warning); border: 1px solid rgba(251, 191, 36, 0.3); }
+        .badge-sell { background-color: rgba(248, 113, 113, 0.15); color: var(--danger); border: 1px solid rgba(248, 113, 113, 0.3); }
         
         .list-unstyled {
             list-style: none;
