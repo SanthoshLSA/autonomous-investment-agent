@@ -4,7 +4,6 @@ LangGraph workflow builder and runner implementation.
 
 from __future__ import annotations
 
-import os
 from typing import Any, Literal
 
 from langchain_ollama import ChatOllama
@@ -76,25 +75,18 @@ def build_investment_graph(config: AppConfig, api_keys: Any) -> Any:
     provider = llm_conf.provider
     model = llm_conf.model
 
-    # Auto-detect cloud deployments and override provider/model if OpenAI/Groq API key is present
-    is_cloud = (
-        os.getenv("RENDER") == "true"
-        or os.getenv("SPACE_ID") is not None
-        or os.getenv("STREAMLIT_SHARING_METADATA") is not None
-        or "STREAMLIT_SERVER_PORT" in os.environ
-    )
-    if is_cloud:
-        # Prioritize Groq if its key is present, ensuring free access in the cloud
-        if api_keys.groq_api_key:
-            logger.info("Cloud deployment detected with Groq API Key. Setting provider to groq.")
-            provider = "groq"
-            model = "llama-3.1-8b-instant"
-        elif api_keys.openai_api_key:
-            logger.info(
-                "Cloud deployment detected with OpenAI API Key. Setting provider to openai."
-            )
-            provider = "openai"
-            model = "gpt-4o-mini"
+    # Auto-detect provider based on available API Keys (prioritize Groq for free tier)
+    if api_keys.groq_api_key:
+        logger.info("Groq API Key found. Setting provider to groq.")
+        provider = "groq"
+        model = "llama-3.1-8b-instant"
+    elif api_keys.openai_api_key:
+        logger.info("OpenAI API Key found. Setting provider to openai.")
+        provider = "openai"
+        model = "gpt-4o-mini"
+    else:
+        logger.info("No cloud API Keys found. Defaulting to local Ollama.")
+        provider = "ollama"
 
     if provider == "openai" and api_keys.openai_api_key:
         logger.info("Initializing OpenAI client", model=model)
