@@ -139,7 +139,7 @@ class LLMConfig(BaseModel):
     @classmethod
     def validate_provider(cls, v: str) -> str:
         """Ensure provider is supported."""
-        allowed = {"ollama", "openai"}
+        allowed = {"ollama", "openai", "groq"}
         if v not in allowed:
             raise ValueError(f"LLM provider must be one of {allowed}, got '{v}'")
         return v
@@ -207,6 +207,7 @@ class APIKeys(BaseModel):
     newsapi_key: Optional[str] = None
     finnhub_key: Optional[str] = None
     openai_api_key: Optional[str] = None
+    groq_api_key: Optional[str] = None
     telegram_bot_token: Optional[str] = None
     telegram_chat_id: Optional[str] = None
 
@@ -216,6 +217,7 @@ class APIKeys(BaseModel):
         newsapi = os.getenv("NEWSAPI_KEY")
         finnhub = os.getenv("FINNHUB_KEY")
         openai = os.getenv("OPENAI_API_KEY")
+        groq = os.getenv("GROQ_API_KEY")
         telegram_token = os.getenv("TELEGRAM_BOT_TOKEN")
         telegram_chat = os.getenv("TELEGRAM_CHAT_ID")
 
@@ -227,6 +229,7 @@ class APIKeys(BaseModel):
                 newsapi = newsapi or st.secrets.get("NEWSAPI_KEY")
                 finnhub = finnhub or st.secrets.get("FINNHUB_KEY")
                 openai = openai or st.secrets.get("OPENAI_API_KEY")
+                groq = groq or st.secrets.get("GROQ_API_KEY")
                 telegram_token = telegram_token or st.secrets.get("TELEGRAM_BOT_TOKEN")
                 telegram_chat = telegram_chat or st.secrets.get("TELEGRAM_CHAT_ID")
         except Exception:
@@ -236,6 +239,7 @@ class APIKeys(BaseModel):
             newsapi_key=newsapi,
             finnhub_key=finnhub,
             openai_api_key=openai,
+            groq_api_key=groq,
             telegram_bot_token=telegram_token,
             telegram_chat_id=telegram_chat,
         )

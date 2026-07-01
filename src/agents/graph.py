@@ -78,17 +78,22 @@ def build_investment_graph(config: AppConfig, api_keys: Any) -> Any:
     provider = llm_conf.provider
     model = llm_conf.model
 
-    # Auto-detect cloud deployments and override provider/model if OpenAI API key is present
+    # Auto-detect cloud deployments and override provider/model if OpenAI/Groq API key is present
     is_cloud = (
         os.getenv("RENDER") == "true" or
         os.getenv("SPACE_ID") is not None or
         os.getenv("STREAMLIT_SHARING_METADATA") is not None or
         "STREAMLIT_SERVER_PORT" in os.environ
     )
-    if is_cloud and api_keys.openai_api_key and provider == "ollama":
-        logger.info("Cloud deployment detected with OpenAI API Key. Overriding provider to openai.")
-        provider = "openai"
-        model = "gpt-4o-mini"
+    if is_cloud and provider == "ollama":
+        if api_keys.openai_api_key:
+            logger.info("Cloud deployment detected with OpenAI API Key. Overriding provider to openai.")
+            provider = "openai"
+            model = "gpt-4o-mini"
+        elif api_keys.groq_api_key:
+            logger.info("Cloud deployment detected with Groq API Key. Overriding provider to groq.")
+            provider = "groq"
+            model = "llama-3.1-8b-instant"
 
     if provider == "openai" and api_keys.openai_api_key:
         logger.info("Initializing OpenAI client", model=model)
@@ -96,6 +101,14 @@ def build_investment_graph(config: AppConfig, api_keys: Any) -> Any:
             model=model,
             temperature=llm_conf.temperature,
             api_key=api_keys.openai_api_key,
+        )
+    elif provider == "groq" and api_keys.groq_api_key:
+        logger.info("Initializing Groq client (OpenAI compatible)", model=model)
+        llm = ChatOpenAI(
+            model=model if "llama" in str(model).lower() else "llama-3.1-8b-instant",
+            temperature=llm_conf.temperature,
+            api_key=api_keys.groq_api_key,
+            base_url="https://api.groq.com/openai/v1",
         )
     else:
         logger.info("Initializing local Ollama client", model=model)
