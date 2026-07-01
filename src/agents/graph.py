@@ -83,17 +83,18 @@ def build_investment_graph(config: AppConfig, api_keys: Any) -> Any:
         or os.getenv("STREAMLIT_SHARING_METADATA") is not None
         or "STREAMLIT_SERVER_PORT" in os.environ
     )
-    if is_cloud and provider == "ollama":
-        if api_keys.openai_api_key:
+    if is_cloud:
+        # Prioritize Groq if its key is present, ensuring free access in the cloud
+        if api_keys.groq_api_key:
+            logger.info("Cloud deployment detected with Groq API Key. Setting provider to groq.")
+            provider = "groq"
+            model = "llama-3.1-8b-instant"
+        elif api_keys.openai_api_key:
             logger.info(
-                "Cloud deployment detected with OpenAI API Key. Overriding provider to openai."
+                "Cloud deployment detected with OpenAI API Key. Setting provider to openai."
             )
             provider = "openai"
             model = "gpt-4o-mini"
-        elif api_keys.groq_api_key:
-            logger.info("Cloud deployment detected with Groq API Key. Overriding provider to groq.")
-            provider = "groq"
-            model = "llama-3.1-8b-instant"
 
     if provider == "openai" and api_keys.openai_api_key:
         logger.info("Initializing OpenAI client", model=model)
