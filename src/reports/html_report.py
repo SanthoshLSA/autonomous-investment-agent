@@ -344,6 +344,77 @@ def generate_html_report(state_data: dict[str, Any], output_path: str | Path) ->
             </table>
         </div>
 
+        <!-- 3.5. Detailed Asset Deep-Dive & News Sources -->
+        <div class="card">
+            <h2 class="card-title">Detailed Asset Analysis & Sources</h2>
+            <div style="margin-top: 15px;">
+    """
+
+    for ticker, score in composite_scores.items():
+        tech = state_data.get("technical_analysis", {}).get(ticker, {})
+        risk = state_data.get("risk_analysis", {}).get(ticker, {})
+        sent = state_data.get("sentiment_analysis", {}).get(ticker, {})
+
+        # Get rationale
+        rationale_text = rationales.get(ticker, "No AI rationale available.")
+
+        # Get metrics
+        risk_score = score.get("risk_score", 0)
+        signal_type = score.get("signal", "hold").upper()
+
+        try:
+            sharpe_val = float(risk.get("sharpe_ratio", 0.0))
+            sharpe_str = f"{sharpe_val:.2f}"
+        except (ValueError, TypeError):
+            sharpe_str = str(risk.get("sharpe_ratio", "0.00"))
+
+        try:
+            sent_val = float(sent.get("weighted_sentiment", 0.0))
+            sent_str = f"{sent_val:+.2f}"
+        except (ValueError, TypeError):
+            sent_str = str(sent.get("weighted_sentiment", "+0.00"))
+
+        html_template += f"""
+                <div style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; margin-bottom: 20px;">
+                    <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; color: #a855f7; margin-bottom: 10px;">{ticker} ({signal_type})</h3>
+                    <p style="margin-bottom: 8px; font-size: 0.95rem; line-height: 1.5;"><strong>AI Decision Rationale:</strong> {str(rationale_text)}</p>
+                    <p style="margin-bottom: 12px; font-size: 0.85rem; color: #94a3b8;"><strong>Metrics:</strong> Risk Score: {risk_score}/100 | Sharpe: {sharpe_str} | Sentiment: {sent_str}</p>
+        """
+
+        # Pull top 3 news sources
+        news_articles = state_data.get("market_data", {}).get(ticker, {}).get("news", [])
+        if news_articles:
+            html_template += """
+                    <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #f8fafc;">Primary Information Sources:</p>
+                    <ul style="margin-left: 20px; margin-bottom: 5px; font-size: 0.85rem; color: #94a3b8;">
+            """
+            for article in news_articles[:3]:
+                # Safe access to article fields
+                title = (
+                    article.title if hasattr(article, "title") else article.get("title", "No Title")
+                )
+                source = (
+                    article.source
+                    if hasattr(article, "source")
+                    else article.get("source", "Unknown Source")
+                )
+                html_template += f'<li>"{str(title)}" (Source: {str(source)})</li>'
+            html_template += """
+                    </ul>
+            """
+        else:
+            html_template += """
+                    <p style="font-size: 0.85rem; font-style: italic; color: #94a3b8;">No news source articles available for this asset.</p>
+            """
+
+        html_template += """
+                </div>
+        """
+
+    html_template += """
+            </div>
+        </div>
+
         <!-- 4. Warnings -->
         <div class="card" style="border-left: 4px solid var(--danger);">
             <h2 class="card-title" style="color: var(--danger);">Caveats & Risk Warnings</h2>
