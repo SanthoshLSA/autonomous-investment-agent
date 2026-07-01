@@ -171,7 +171,18 @@ st.sidebar.header("Agent Configuration")
 st.sidebar.markdown(f"**Stance:** `{config.portfolio.risk_tolerance.upper()}`")
 st.sidebar.markdown(f"**Optimization:** `{config.portfolio.optimization_method}`")
 
-watchlist = config.watchlist.all_tickers
+watchlist = list(config.watchlist.all_tickers)
+
+# Allow user to dynamically add new assets directly in the UI
+custom_ticker = (
+    st.sidebar.text_input("➕ Add custom ticker (e.g. NVDA, TATAMOTORS.NS, SOL-USD)", "")
+    .strip()
+    .upper()
+)
+if custom_ticker:
+    if custom_ticker not in watchlist:
+        watchlist.append(custom_ticker)
+
 selected_tickers = st.sidebar.multiselect("Watchlist Assets", watchlist, default=watchlist)
 
 
