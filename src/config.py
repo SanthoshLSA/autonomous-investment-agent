@@ -212,13 +212,32 @@ class APIKeys(BaseModel):
 
     @classmethod
     def from_env(cls) -> "APIKeys":
-        """Load API keys from environment variables."""
+        """Load API keys from environment variables with Streamlit secrets fallback."""
+        newsapi = os.getenv("NEWSAPI_KEY")
+        finnhub = os.getenv("FINNHUB_KEY")
+        openai = os.getenv("OPENAI_API_KEY")
+        telegram_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        telegram_chat = os.getenv("TELEGRAM_CHAT_ID")
+
+        # Fallback to Streamlit secrets if running inside streamlit
+        try:
+            import streamlit as st
+            # Check if secrets attribute exists and is populated
+            if hasattr(st, "secrets") and st.secrets:
+                newsapi = newsapi or st.secrets.get("NEWSAPI_KEY")
+                finnhub = finnhub or st.secrets.get("FINNHUB_KEY")
+                openai = openai or st.secrets.get("OPENAI_API_KEY")
+                telegram_token = telegram_token or st.secrets.get("TELEGRAM_BOT_TOKEN")
+                telegram_chat = telegram_chat or st.secrets.get("TELEGRAM_CHAT_ID")
+        except Exception:
+            pass
+
         return cls(
-            newsapi_key=os.getenv("NEWSAPI_KEY"),
-            finnhub_key=os.getenv("FINNHUB_KEY"),
-            openai_api_key=os.getenv("OPENAI_API_KEY"),
-            telegram_bot_token=os.getenv("TELEGRAM_BOT_TOKEN"),
-            telegram_chat_id=os.getenv("TELEGRAM_CHAT_ID"),
+            newsapi_key=newsapi,
+            finnhub_key=finnhub,
+            openai_api_key=openai,
+            telegram_bot_token=telegram_token,
+            telegram_chat_id=telegram_chat,
         )
 
 

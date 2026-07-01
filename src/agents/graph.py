@@ -59,6 +59,8 @@ def route_after_approval(state: InvestmentAgentState) -> Literal["continue", "en
     return "end"
 
 
+import os
+
 def build_investment_graph(config: AppConfig, api_keys: Any) -> Any:
     """Builds and compiles the sequential multi-agent LangGraph workflow.
 
@@ -73,17 +75,32 @@ def build_investment_graph(config: AppConfig, api_keys: Any) -> Any:
 
     # 1. Initialize LLM
     llm_conf = config.llm
-    if llm_conf.provider == "openai" and api_keys.openai_api_key:
-        logger.info("Initializing OpenAI client", model=llm_conf.model)
+    provider = llm_conf.provider
+    model = llm_conf.model
+
+    # Auto-detect cloud deployments and override provider/model if OpenAI API key is present
+    is_cloud = (
+        os.getenv("RENDER") == "true" or
+        os.getenv("SPACE_ID") is not None or
+        os.getenv("STREAMLIT_SHARING_METADATA") is not None or
+        "STREAMLIT_SERVER_PORT" in os.environ
+    )
+    if is_cloud and api_keys.openai_api_key and provider == "ollama":
+        logger.info("Cloud deployment detected with OpenAI API Key. Overriding provider to openai.")
+        provider = "openai"
+        model = "gpt-4o-mini"
+
+    if provider == "openai" and api_keys.openai_api_key:
+        logger.info("Initializing OpenAI client", model=model)
         llm = ChatOpenAI(
-            model=llm_conf.model,
+            model=model,
             temperature=llm_conf.temperature,
             api_key=api_keys.openai_api_key,
         )
     else:
-        logger.info("Initializing local Ollama client", model=llm_conf.model)
+        logger.info("Initializing local Ollama client", model=model)
         llm = ChatOllama(
-            model=llm_conf.model,
+            model=model,
             temperature=llm_conf.temperature,
         )
 
