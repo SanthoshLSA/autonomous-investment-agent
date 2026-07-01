@@ -79,7 +79,7 @@ class Backtester:
     def _run_vectorbt_backtest(self, df: pd.DataFrame, weights: dict[str, float]) -> dict[str, Any]:
         """Executes rebalanced backtest using vectorbt."""
         logger.info("Executing vectorbt simulation...")
-        
+
         # Configure numba cache dir to avoid Windows hang issues
         os.environ.setdefault("NUMBA_CACHE_DIR", str(Path.home() / ".numba_cache"))
         import vectorbt as vbt
@@ -87,7 +87,7 @@ class Backtester:
         # Exclude benchmark indicators from asset daily returns calculation
         asset_cols = [c for c in df.columns if not c.startswith("^")]
         asset_prices = df[asset_cols]
-        returns = asset_prices.pct_change().dropna()
+        asset_prices.pct_change().dropna()
 
         # Build weights array matching columns
         w_arr = np.array([weights.get(col, 0.0) for col in asset_cols])
@@ -129,7 +129,9 @@ class Backtester:
         if bench_cols:
             bench_col = bench_cols[0]
             bench_prices = df[bench_col]
-            benchmark_return = float((bench_prices.iloc[-1] - bench_prices.iloc[0]) / bench_prices.iloc[0])
+            benchmark_return = float(
+                (bench_prices.iloc[-1] - bench_prices.iloc[0]) / bench_prices.iloc[0]
+            )
 
         return {
             "total_return": total_return,
@@ -161,19 +163,19 @@ class Backtester:
 
         # Calculate daily portfolio returns
         daily_portfolio_returns = returns.dot(w_arr)
-        
+
         # Simple transaction fee subtraction on first day
         daily_portfolio_returns.iloc[0] -= self.config.transaction_cost
 
         # Calculate metrics
         cumulative_returns = (1 + daily_portfolio_returns).cumprod() - 1
         total_return = float(cumulative_returns.iloc[-1])
-        
+
         # Annualized values
         n_days = len(returns)
         ann_return = float((total_return + 1) ** (252.0 / n_days) - 1) if n_days > 0 else 0.0
         vol = float(daily_portfolio_returns.std() * np.sqrt(252))
-        
+
         sharpe = (ann_return - 0.05) / vol if vol > 0 else 0.0
 
         # Drawdowns
@@ -189,7 +191,9 @@ class Backtester:
         if bench_cols:
             bench_col = bench_cols[0]
             bench_series = df[bench_col]
-            benchmark_return = float((bench_series.iloc[-1] - bench_series.iloc[0]) / bench_series.iloc[0])
+            benchmark_return = float(
+                (bench_series.iloc[-1] - bench_series.iloc[0]) / bench_series.iloc[0]
+            )
 
         monthly_returns = daily_portfolio_returns.resample("ME").sum()
         monthly_dict = {date.strftime("%Y-%m"): float(val) for date, val in monthly_returns.items()}

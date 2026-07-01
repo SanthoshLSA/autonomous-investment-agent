@@ -8,7 +8,6 @@ or start the scheduler daemon.
 from __future__ import annotations
 
 import sys
-import time
 from datetime import datetime
 from typing import Any
 
@@ -18,8 +17,8 @@ from apscheduler.triggers.cron import CronTrigger
 
 from src.agents.graph import (
     build_investment_graph,
-    run_investment_analysis,
     resume_with_approval,
+    run_investment_analysis,
 )
 from src.config import get_api_keys, get_config
 from src.logger import get_logger, setup_logging
@@ -48,7 +47,7 @@ def run_pipeline() -> dict[str, Any]:
     try:
         # 1. Run pipeline up to human approval gate
         logger.info("Invoking sequential LangGraph agents...")
-        state = run_investment_analysis(graph, watchlist, thread_id)
+        run_investment_analysis(graph, watchlist, thread_id)
 
         # 2. CLI execution auto-approves proposals for convenience
         logger.info("Auto-approving portfolio allocations in automated daemon run mode...")
@@ -57,7 +56,7 @@ def run_pipeline() -> dict[str, Any]:
         # 3. Generate HTML output reports
         reports = generate_daily_report(final_state)
         logger.info("Scheduled pipeline completed successfully", reports=reports)
-        
+
         return final_state
 
     except Exception as e:
@@ -101,7 +100,7 @@ def start_daemon() -> None:
     hour, minute = map(int, run_time.split(":"))
 
     scheduler = BlockingScheduler(timezone=config.schedule.timezone)
-    
+
     # Configure trigger parameters (skipping weekends if configured)
     day_of_week = "mon-fri" if config.schedule.weekend_skip else "*"
     trigger = CronTrigger(hour=hour, minute=minute, day_of_week=day_of_week)

@@ -9,12 +9,10 @@ a ``fetched_at`` epoch timestamp used for freshness checks.
 
 from __future__ import annotations
 
-import json
 import sqlite3
 import threading
 import time
 from pathlib import Path
-from typing import Optional
 
 from src.logger import get_logger
 
@@ -94,7 +92,7 @@ class DataCache:
         Returns:
             sqlite3.Connection bound to the current thread.
         """
-        conn: Optional[sqlite3.Connection] = getattr(self._local, "conn", None)
+        conn: sqlite3.Connection | None = getattr(self._local, "conn", None)
         if conn is None:
             conn = sqlite3.connect(self._db_path)
             conn.execute("PRAGMA journal_mode=WAL")
@@ -109,8 +107,8 @@ class DataCache:
         self,
         ticker: str,
         data_type: str,
-        max_age_hours: Optional[float] = None,
-    ) -> Optional[str]:
+        max_age_hours: float | None = None,
+    ) -> str | None:
         """Retrieve a cached JSON string if it exists and is fresh.
 
         Args:
@@ -166,7 +164,7 @@ class DataCache:
 
         logger.debug("cache_set", ticker=ticker, data_type=data_type)
 
-    def clear_expired(self, max_age_hours: Optional[float] = None) -> int:
+    def clear_expired(self, max_age_hours: float | None = None) -> int:
         """Remove all entries older than the TTL.
 
         Args:
@@ -194,7 +192,7 @@ class DataCache:
 
     def close(self) -> None:
         """Close the current thread's connection if open."""
-        conn: Optional[sqlite3.Connection] = getattr(self._local, "conn", None)
+        conn: sqlite3.Connection | None = getattr(self._local, "conn", None)
         if conn is not None:
             conn.close()
             self._local.conn = None

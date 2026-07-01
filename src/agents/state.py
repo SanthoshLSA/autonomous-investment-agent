@@ -8,7 +8,7 @@ and recommendation graph.
 from __future__ import annotations
 
 import operator
-from typing import Annotated, Any, Optional, TypedDict
+from typing import Annotated, Any, TypedDict
 
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
@@ -29,33 +29,33 @@ class InvestmentAgentState(TypedDict):
 
     # Raw market prices, fundamentals and news fetched by researcher
     # Schema: {ticker: MarketDataBundle.model_dump()}
-    market_data: Optional[dict[str, Any]]
+    market_data: dict[str, Any] | None
 
     # Signals from technical analysis
     # Schema: {ticker: {indicator: value/signal}}
-    technical_analysis: Optional[dict[str, Any]]
+    technical_analysis: dict[str, Any] | None
 
     # Risk metrics calculated for each asset
     # Schema: {ticker: {metric: value}}
-    risk_analysis: Optional[dict[str, Any]]
+    risk_analysis: dict[str, Any] | None
 
     # Sentiment analysis results from news
     # Schema: {ticker: {weighted_sentiment: float, classification: str}}
-    sentiment_analysis: Optional[dict[str, Any]]
+    sentiment_analysis: dict[str, Any] | None
 
     # Normalized composite scores (0-100) and recommendation signals
     # Schema: {ticker: {risk_score: float, signal: str, confidence: float}}
-    composite_scores: Optional[dict[str, Any]]
+    composite_scores: dict[str, Any] | None
 
     # Output portfolio optimization allocations and metrics
     # Schema: {weights: {ticker: float}, expected_return: float, sharpe_ratio: float}
-    portfolio_recommendation: Optional[dict[str, Any]]
+    portfolio_recommendation: dict[str, Any] | None
 
     # User gate decision: 'approve', 'reject', or 'modify'
-    human_approval: Optional[str]
+    human_approval: str | None
 
     # Path to generated daily report (PDF / HTML)
-    final_report: Optional[str]
+    final_report: str | None
 
     # Append-only execution audit log tracking step progression
     audit_log: Annotated[list[str], operator.add]

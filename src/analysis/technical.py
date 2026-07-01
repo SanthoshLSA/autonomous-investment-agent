@@ -8,8 +8,6 @@ All indicator calculations delegate to **pandas-ta-classic** for correctness.
 
 from __future__ import annotations
 
-from typing import Optional
-
 import pandas as pd
 import pandas_ta_classic as ta
 
@@ -212,7 +210,7 @@ def calculate_bollinger_bands(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def _latest_valid(series: pd.Series) -> Optional[float]:
+def _latest_valid(series: pd.Series) -> float | None:
     """Return the last non-NaN value in *series*, or ``None``."""
     if series.empty:
         return None
@@ -371,9 +369,7 @@ def generate_signals(prices_series: pd.Series, config: AnalysisConfig) -> dict:
             ("bollinger_signal", "oversold", "overbought"),
         ]:
             val = signals[s_name]
-            if direction > 0 and val == buy_val:
-                agreeing += 1
-            elif direction < 0 and val == sell_val:
+            if direction > 0 and val == buy_val or direction < 0 and val == sell_val:
                 agreeing += 1
         signals["confidence"] = round(agreeing / total_indicators, 2)
     else:

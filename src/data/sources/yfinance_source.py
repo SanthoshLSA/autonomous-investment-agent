@@ -9,8 +9,6 @@ Includes rate limiting and retry logic for resilience.
 from __future__ import annotations
 
 import time
-from datetime import datetime
-from typing import Optional
 
 import yfinance as yf
 from tenacity import (
@@ -94,8 +92,7 @@ class YFinanceSource:
 
         if df is None or df.empty:
             raise ValueError(
-                f"No price data returned for {ticker} "
-                f"(period={period}, interval={interval})"
+                f"No price data returned for {ticker} " f"(period={period}, interval={interval})"
             )
 
         prices: list[AssetPrice] = []
@@ -108,11 +105,7 @@ class YFinanceSource:
                     low=float(row.get("Low", 0.0)),
                     close=float(row.get("Close", 0.0)),
                     volume=int(row.get("Volume", 0)),
-                    adjusted_close=(
-                        float(row["Adj Close"])
-                        if "Adj Close" in row.index
-                        else None
-                    ),
+                    adjusted_close=(float(row["Adj Close"]) if "Adj Close" in row.index else None),
                 )
                 prices.append(price)
             except (ValueError, TypeError, KeyError) as exc:
@@ -160,7 +153,7 @@ class YFinanceSource:
         if not info:
             raise ValueError(f"No info returned for {ticker}")
 
-        def _safe_float(key: str) -> Optional[float]:
+        def _safe_float(key: str) -> float | None:
             """Extract a float from the info dict, returning None on failure."""
             val = info.get(key)
             if val is None:

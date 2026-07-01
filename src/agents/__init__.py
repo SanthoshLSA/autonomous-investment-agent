@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from src.agents.graph import (
     build_investment_graph,
-    run_investment_analysis,
     resume_with_approval,
+    run_investment_analysis,
 )
 from src.agents.state import InvestmentAgentState
 

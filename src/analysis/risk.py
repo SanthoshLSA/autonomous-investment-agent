@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import math
 from datetime import datetime
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -308,7 +307,9 @@ def calculate_max_drawdown(prices: pd.Series) -> dict:
     }
 
     if prices is None or prices.empty or len(prices) < 2:
-        logger.warning("max_drawdown_insufficient_data", length=0 if prices is None else len(prices))
+        logger.warning(
+            "max_drawdown_insufficient_data", length=0 if prices is None else len(prices)
+        )
         return default
 
     prices = prices.dropna()
@@ -329,7 +330,7 @@ def calculate_max_drawdown(prices: pd.Series) -> dict:
     peak_price = prices.loc[peak_idx]
     post_trough = prices.loc[trough_idx:]
     recovered = post_trough[post_trough >= peak_price]
-    recovery_date: Optional[datetime] = None
+    recovery_date: datetime | None = None
     if len(recovered) > 1:
         # Skip the trough itself if it happens to equal peak (unlikely)
         recovery_candidates = recovered.iloc[1:]
@@ -370,9 +371,7 @@ def calculate_max_drawdown(prices: pd.Series) -> dict:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def calculate_sharpe_ratio(
-    returns: pd.Series, risk_free_rate: float = 0.05
-) -> float:
+def calculate_sharpe_ratio(returns: pd.Series, risk_free_rate: float = 0.05) -> float:
     """Annualized Sharpe ratio.
 
     Formula: (mean_daily_return × 252 − risk_free_rate) / (daily_std × √252)
@@ -401,9 +400,7 @@ def calculate_sharpe_ratio(
     return sharpe
 
 
-def calculate_sortino_ratio(
-    returns: pd.Series, risk_free_rate: float = 0.05
-) -> float:
+def calculate_sortino_ratio(returns: pd.Series, risk_free_rate: float = 0.05) -> float:
     """Annualized Sortino ratio (uses downside deviation only).
 
     Args:
@@ -484,7 +481,7 @@ def calculate_beta(asset_returns: pd.Series, market_returns: pd.Series) -> float
 
 def stress_test(
     returns: pd.Series,
-    scenarios: Optional[dict[str, dict]] = None,
+    scenarios: dict[str, dict] | None = None,
 ) -> dict:
     """Run stress-test scenarios and estimate portfolio impact.
 
@@ -516,7 +513,7 @@ def stress_test(
 
     clean = returns.dropna()
     current_vol = float(clean.std()) * math.sqrt(_TRADING_DAYS)
-    mean_return = float(clean.mean()) * _TRADING_DAYS
+    float(clean.mean()) * _TRADING_DAYS
 
     results: dict = {}
     for name, params in scenarios.items():

@@ -4,13 +4,12 @@ Researcher agent node responsible for downloading price, fundamentals, and news 
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 
+from src.agents.state import InvestmentAgentState
 from src.config import get_api_keys, get_config
 from src.data.fetcher import DataFetcher
 from src.logger import get_logger
-from src.agents.state import InvestmentAgentState
 
 logger = get_logger(__name__)
 

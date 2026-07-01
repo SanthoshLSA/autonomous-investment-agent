@@ -7,8 +7,8 @@ from __future__ import annotations
 from typing import Any
 
 import pandas as pd
-import plotly.graph_objects as go
 import plotly.express as px
+import plotly.graph_objects as go
 
 from src.logger import get_logger
 
@@ -106,7 +106,7 @@ def build_allocation_pie(weights: dict[str, float]) -> go.Figure:
     values = [w for w in weights.values()]
 
     # Filter out empty allocations to make the pie chart clean
-    active_labels = [l for l, v in zip(labels, values) if v > 0.0]
+    active_labels = [lbl for lbl, v in zip(labels, values, strict=False) if v > 0.0]
     active_values = [v for v in values if v > 0.0]
 
     # Calculate Cash allocation
@@ -146,7 +146,7 @@ def build_equity_curve(curve_values: list[float], dates: list[str]) -> go.Figure
     """
     logger.info("Building equity curve...")
     fig = go.Figure()
-    
+
     fig.add_trace(
         go.Scatter(
             x=dates,

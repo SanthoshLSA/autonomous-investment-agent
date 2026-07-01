@@ -9,12 +9,10 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Optional
 
 import yaml
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, field_validator
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Path Constants
@@ -85,7 +83,9 @@ class ScoringConfig(BaseModel):
     market_beta_weight: float = 0.20
     drawdown_weight: float = 0.10
 
-    @field_validator("volatility_weight", "sentiment_weight", "market_beta_weight", "drawdown_weight")
+    @field_validator(
+        "volatility_weight", "sentiment_weight", "market_beta_weight", "drawdown_weight"
+    )
     @classmethod
     def validate_weight(cls, v: float) -> float:
         """Ensure each weight is between 0 and 1."""
@@ -119,7 +119,7 @@ class BacktestConfig(BaseModel):
     """Backtesting parameters."""
 
     start_date: str = "2021-01-01"
-    end_date: Optional[str] = None
+    end_date: str | None = None
     benchmark: str = "^GSPC"
     transaction_cost: float = 0.001
     slippage: float = 0.0005
@@ -204,15 +204,15 @@ class AppConfig(BaseModel):
 class APIKeys(BaseModel):
     """API keys loaded from environment variables."""
 
-    newsapi_key: Optional[str] = None
-    finnhub_key: Optional[str] = None
-    openai_api_key: Optional[str] = None
-    groq_api_key: Optional[str] = None
-    telegram_bot_token: Optional[str] = None
-    telegram_chat_id: Optional[str] = None
+    newsapi_key: str | None = None
+    finnhub_key: str | None = None
+    openai_api_key: str | None = None
+    groq_api_key: str | None = None
+    telegram_bot_token: str | None = None
+    telegram_chat_id: str | None = None
 
     @classmethod
-    def from_env(cls) -> "APIKeys":
+    def from_env(cls) -> APIKeys:
         """Load API keys from environment variables with Streamlit secrets fallback."""
         newsapi = os.getenv("NEWSAPI_KEY")
         finnhub = os.getenv("FINNHUB_KEY")
@@ -224,6 +224,7 @@ class APIKeys(BaseModel):
         # Fallback to Streamlit secrets if running inside streamlit
         try:
             import streamlit as st
+
             # Check if secrets attribute exists and is populated
             if hasattr(st, "secrets") and st.secrets:
                 newsapi = newsapi or st.secrets.get("NEWSAPI_KEY")
@@ -250,11 +251,11 @@ class APIKeys(BaseModel):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Module-level singleton
-_config: Optional[AppConfig] = None
-_api_keys: Optional[APIKeys] = None
+_config: AppConfig | None = None
+_api_keys: APIKeys | None = None
 
 
-def load_config(config_path: Optional[Path] = None) -> AppConfig:
+def load_config(config_path: Path | None = None) -> AppConfig:
     """
     Load application configuration from YAML file.
 
@@ -276,7 +277,7 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
         _config = AppConfig()
         return _config
 
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         raw = yaml.safe_load(f) or {}
 
     _config = AppConfig(**raw)

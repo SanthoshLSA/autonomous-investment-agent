@@ -4,20 +4,20 @@ LangGraph workflow builder and runner implementation.
 
 from __future__ import annotations
 
+import os
 from typing import Any, Literal
 
-from langchain_core.messages import AIMessage
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import START, END, StateGraph
+from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
 
 from src.agents.analyst import analyst_node
 from src.agents.recommender import create_recommender_node
 from src.agents.researcher import researcher_node
 from src.agents.state import InvestmentAgentState
-from src.config import AppConfig, get_config, get_api_keys
+from src.config import AppConfig
 from src.logger import get_logger
 
 logger = get_logger(__name__)
@@ -33,16 +33,16 @@ def human_approval_node(state: InvestmentAgentState) -> dict[str, Any]:
         State updates with the user's decision.
     """
     logger.info("Human approval gate activated, pausing execution...")
-    
+
     # Pack up the proposed recommendation for the UI/Interrupt response
     payload = {
         "portfolio_recommendation": state.get("portfolio_recommendation"),
         "watchlist": state.get("tickers"),
     }
-    
+
     # This halts graph execution and yields control back to the caller
     decision = interrupt(payload)
-    
+
     logger.info("Human approval decision received", decision=decision)
     return {"human_approval": decision}
 
@@ -58,8 +58,6 @@ def route_after_approval(state: InvestmentAgentState) -> Literal["continue", "en
         return "continue"
     return "end"
 
-
-import os
 
 def build_investment_graph(config: AppConfig, api_keys: Any) -> Any:
     """Builds and compiles the sequential multi-agent LangGraph workflow.
@@ -80,14 +78,16 @@ def build_investment_graph(config: AppConfig, api_keys: Any) -> Any:
 
     # Auto-detect cloud deployments and override provider/model if OpenAI/Groq API key is present
     is_cloud = (
-        os.getenv("RENDER") == "true" or
-        os.getenv("SPACE_ID") is not None or
-        os.getenv("STREAMLIT_SHARING_METADATA") is not None or
-        "STREAMLIT_SERVER_PORT" in os.environ
+        os.getenv("RENDER") == "true"
+        or os.getenv("SPACE_ID") is not None
+        or os.getenv("STREAMLIT_SHARING_METADATA") is not None
+        or "STREAMLIT_SERVER_PORT" in os.environ
     )
     if is_cloud and provider == "ollama":
         if api_keys.openai_api_key:
-            logger.info("Cloud deployment detected with OpenAI API Key. Overriding provider to openai.")
+            logger.info(
+                "Cloud deployment detected with OpenAI API Key. Overriding provider to openai."
+            )
             provider = "openai"
             model = "gpt-4o-mini"
         elif api_keys.groq_api_key:
@@ -133,7 +133,7 @@ def build_investment_graph(config: AppConfig, api_keys: Any) -> Any:
     builder.add_edge("researcher", "analyst")
     builder.add_edge("analyst", "recommender")
     builder.add_edge("recommender", "human_approval")
-    
+
     # Conditional edge after approval gate
     builder.add_conditional_edges(
         "human_approval",
@@ -141,7 +141,7 @@ def build_investment_graph(config: AppConfig, api_keys: Any) -> Any:
         {
             "continue": END,
             "end": END,
-        }
+        },
     )
 
     # Compile with memory persistence
@@ -168,7 +168,7 @@ def run_investment_analysis(graph: Any, tickers: list[str], thread_id: str) -> d
         "audit_log": [f"Pipeline started for {', '.join(tickers)}."],
         "error_log": [],
     }
-    
+
     logger.info("Starting graph execution run", thread_id=thread_id)
     return graph.invoke(initial_state, config=config)
 

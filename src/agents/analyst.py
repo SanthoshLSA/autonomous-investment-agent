@@ -8,23 +8,22 @@ from typing import Any
 
 import pandas as pd
 
+from src.agents.state import InvestmentAgentState
+from src.analysis.risk import (
+    calculate_beta,
+    calculate_cvar,
+    calculate_daily_returns,
+    calculate_max_drawdown,
+    calculate_sharpe_ratio,
+    calculate_var_historical,
+    calculate_volatility,
+)
 from src.analysis.scoring import calculate_composite_score
 from src.analysis.sentiment import analyze_news_batch
 from src.analysis.technical import generate_signals
-from src.analysis.risk import (
-    calculate_daily_returns,
-    calculate_volatility,
-    calculate_var_historical,
-    calculate_cvar,
-    monte_carlo_simulation,
-    calculate_max_drawdown,
-    calculate_sharpe_ratio,
-    calculate_beta,
-)
 from src.config import get_config
 from src.data.models import NewsArticle
 from src.logger import get_logger
-from src.agents.state import InvestmentAgentState
 
 logger = get_logger(__name__)
 
@@ -96,7 +95,7 @@ def analyst_node(state: InvestmentAgentState) -> dict[str, Any]:
             cvar = calculate_cvar(returns, config.risk.cvar_confidence)
             sharpe = calculate_sharpe_ratio(returns, config.risk.risk_free_rate)
             drawdown_metrics = calculate_max_drawdown(close_series)
-            
+
             beta = 1.0
             if benchmark_returns is not None:
                 beta = calculate_beta(returns, benchmark_returns)

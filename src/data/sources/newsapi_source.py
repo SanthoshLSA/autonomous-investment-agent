@@ -9,8 +9,7 @@ such as ``"Apple stock"``.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
 from src.data.models import NewsArticle
 from src.logger import get_logger
@@ -54,7 +53,7 @@ class NewsAPISource:
         api_key: NewsAPI key. ``None`` or empty string disables the source.
     """
 
-    def __init__(self, api_key: Optional[str] = None) -> None:
+    def __init__(self, api_key: str | None = None) -> None:
         self._api_key = api_key or ""
         self._client = None
 
@@ -112,10 +111,8 @@ class NewsAPISource:
             return []
 
         search_term = _TICKER_SEARCH_MAP.get(query, query)
-        from_date = (datetime.now(tz=timezone.utc) - timedelta(days=days_back)).strftime(
-            "%Y-%m-%d"
-        )
-        to_date = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
+        from_date = (datetime.now(tz=UTC) - timedelta(days=days_back)).strftime("%Y-%m-%d")
+        to_date = datetime.now(tz=UTC).strftime("%Y-%m-%d")
 
         logger.info(
             "newsapi_fetching",
@@ -158,11 +155,9 @@ class NewsAPISource:
                 published_str = raw.get("publishedAt", "")
                 if published_str:
                     # NewsAPI returns ISO 8601 timestamps
-                    published_at = datetime.fromisoformat(
-                        published_str.replace("Z", "+00:00")
-                    )
+                    published_at = datetime.fromisoformat(published_str.replace("Z", "+00:00"))
                 else:
-                    published_at = datetime.now(tz=timezone.utc)
+                    published_at = datetime.now(tz=UTC)
 
                 article = NewsArticle(
                     title=raw.get("title") or "Untitled",

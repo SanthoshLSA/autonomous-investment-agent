@@ -5,7 +5,8 @@ Recommender agent node running LLM synthesis for structural recommendations.
 from __future__ import annotations
 
 import json
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -32,7 +33,10 @@ def create_recommender_node(llm: Any) -> Callable[[InvestmentAgentState], dict[s
         if not composite_scores:
             err = "Recommender failed: No composite scoring data found in state."
             logger.error(err)
-            return {"error_log": [err], "audit_log": ["Recommender aborted: Missing composite scores."]}
+            return {
+                "error_log": [err],
+                "audit_log": ["Recommender aborted: Missing composite scores."],
+            }
 
         config = get_config()
         risk_tolerance = config.portfolio.risk_tolerance
@@ -81,7 +85,7 @@ Generate the JSON recommendation portfolio."""
                 SystemMessage(content=system_prompt),
                 HumanMessage(content=user_prompt),
             ]
-            
+
             logger.info("Invoking LLM for synthesis...")
             response = llm.invoke(messages)
             content = response.content.strip()
@@ -89,9 +93,7 @@ Generate the JSON recommendation portfolio."""
             # Clean markdown formatting wraps if LLM ignored instructions
             if content.startswith("```"):
                 lines = content.splitlines()
-                if lines[0].startswith("```json"):
-                    content = "\n".join(lines[1:-1])
-                elif lines[0].startswith("```"):
+                if lines[0].startswith("```json") or lines[0].startswith("```"):
                     content = "\n".join(lines[1:-1])
 
             recs = json.loads(content)
@@ -107,17 +109,23 @@ Generate the JSON recommendation portfolio."""
             }
 
         except Exception as e:
-            logger.exception("Recommender node LLM failure, using deterministic conservative fallback")
-            
+            logger.exception(
+                "Recommender node LLM failure, using deterministic conservative fallback"
+            )
+
             # Deterministic conservative fallback allocation (Equal weight bounded by 20% max, rest Cash)
             fallback_allocations = {}
             active_tickers = list(composite_scores.keys())
             if active_tickers:
                 # Divide up to 60% of portfolio equally among buy/hold assets, cash for the rest
-                valid_assets = [t for t in active_tickers if composite_scores[t]["signal"] in ["strong_buy", "buy", "hold"]]
+                valid_assets = [
+                    t
+                    for t in active_tickers
+                    if composite_scores[t]["signal"] in ["strong_buy", "buy", "hold"]
+                ]
                 if not valid_assets:
                     valid_assets = active_tickers
-                
+
                 weight = min(0.6 / len(valid_assets), config.portfolio.max_single_position)
                 for t in active_tickers:
                     if t in valid_assets:
@@ -127,9 +135,14 @@ Generate the JSON recommendation portfolio."""
 
             fallback_rec = {
                 "allocations": fallback_allocations,
-                "rationale": {t: "Deterministic fallback due to LLM timeout/unavailability." for t in active_tickers},
+                "rationale": {
+                    t: "Deterministic fallback due to LLM timeout/unavailability."
+                    for t in active_tickers
+                },
                 "portfolio_summary": "Conservative equal-weight fallback allocation designed for stability.",
-                "warnings": ["System used rule-based fallback recommendation because LLM service was unreachable."],
+                "warnings": [
+                    "System used rule-based fallback recommendation because LLM service was unreachable."
+                ],
             }
             return {
                 "portfolio_recommendation": fallback_rec,

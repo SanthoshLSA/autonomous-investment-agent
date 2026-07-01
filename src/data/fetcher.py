@@ -12,9 +12,8 @@ from __future__ import annotations
 
 import json
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 from src.config import APIKeys, AppConfig
 from src.data.cache import DataCache
@@ -222,9 +221,7 @@ class DataFetcher:
     # Private: price fetching with cache + fallback
     # ═══════════════════════════════════════════════════════════════════════
 
-    def _fetch_prices(
-        self, ticker: str
-    ) -> tuple[list[AssetPrice], FetchResult]:
+    def _fetch_prices(self, ticker: str) -> tuple[list[AssetPrice], FetchResult]:
         """Fetch prices: cache → yfinance → finnhub (quote only).
 
         Args:
@@ -274,7 +271,7 @@ class DataFetcher:
         try:
             quote = self._finnhub.get_quote(ticker)
             if quote.get("current_price", 0) > 0:
-                now = datetime.now(tz=timezone.utc)
+                now = datetime.now(tz=UTC)
                 fallback_price = AssetPrice(
                     date=now,
                     open=quote["current_price"],
@@ -307,9 +304,7 @@ class DataFetcher:
     # Private: info fetching with cache
     # ═══════════════════════════════════════════════════════════════════════
 
-    def _fetch_info(
-        self, ticker: str
-    ) -> tuple[Optional[AssetInfo], FetchResult]:
+    def _fetch_info(self, ticker: str) -> tuple[AssetInfo | None, FetchResult]:
         """Fetch asset info: cache → yfinance.
 
         Args:
@@ -341,9 +336,7 @@ class DataFetcher:
         try:
             info = self._yfinance.get_asset_info(ticker)
             if self._cache_enabled:
-                self._cache.set(
-                    ticker, "info", info.model_dump_json()
-                )
+                self._cache.set(ticker, "info", info.model_dump_json())
             return info, FetchResult(
                 status="success",
                 data=None,
@@ -367,9 +360,7 @@ class DataFetcher:
     # Private: news fetching with cache + fallback
     # ═══════════════════════════════════════════════════════════════════════
 
-    def _fetch_news_for_ticker(
-        self, ticker: str
-    ) -> tuple[list[NewsArticle], FetchResult]:
+    def _fetch_news_for_ticker(self, ticker: str) -> tuple[list[NewsArticle], FetchResult]:
         """Fetch news: cache → NewsAPI → Finnhub company_news.
 
         Args:
@@ -464,9 +455,7 @@ class DataFetcher:
         if not self._cache_enabled:
             return
         try:
-            data = json.dumps(
-                [p.model_dump(mode="json") for p in prices]
-            )
+            data = json.dumps([p.model_dump(mode="json") for p in prices])
             self._cache.set(ticker, "prices", data)
         except Exception as exc:
             logger.warning(
@@ -486,9 +475,7 @@ class DataFetcher:
         if not self._cache_enabled:
             return
         try:
-            data = json.dumps(
-                [a.model_dump(mode="json") for a in articles]
-            )
+            data = json.dumps([a.model_dump(mode="json") for a in articles])
             self._cache.set(ticker, "news", data)
         except Exception as exc:
             logger.warning(

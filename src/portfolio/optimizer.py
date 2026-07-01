@@ -8,10 +8,9 @@ from __future__ import annotations
 
 from typing import Any
 
-import numpy as np
 import pandas as pd
 from pypfopt import EfficientFrontier, expected_returns, risk_models
-from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
+from pypfopt.discrete_allocation import DiscreteAllocation
 
 from src.config import PortfolioConfig
 from src.logger import get_logger
@@ -58,7 +57,7 @@ class PortfolioOptimizer:
             # 1. Expected Returns & Sample Covariance
             # Since PyPortfolioOpt expects daily prices:
             mu = expected_returns.mean_historical_return(prices_df)
-            S = risk_models.sample_cov(prices_df)
+            S = risk_models.sample_cov(prices_df)  # noqa: N806
 
             # 2. Set weight limits (min position limit, max single exposure limit)
             ef = EfficientFrontier(
@@ -90,12 +89,12 @@ class PortfolioOptimizer:
 
         except Exception as e:
             logger.exception("Portfolio optimization failed, using equal weight fallback")
-            
+
             # Equal weight fallback
             n_assets = len(tickers)
             fallback_weight = round(1.0 / n_assets, 4) if n_assets > 0 else 0.0
             weights = {ticker: fallback_weight for ticker in tickers}
-            
+
             return {
                 "weights": weights,
                 "expected_return": 0.0,
@@ -130,14 +129,14 @@ class PortfolioOptimizer:
             logger.exception("Discrete allocation calculation failed, using basic rounding")
             allocation = {}
             leftover = total_value
-            
+
             for ticker, weight in weights.items():
                 price = latest_prices.get(ticker)
                 if price and price > 0:
                     shares = int((total_value * weight) // price)
                     allocation[ticker] = shares
                     leftover -= shares * price
-            
+
             return {
                 "allocation": allocation,
                 "leftover": float(leftover),

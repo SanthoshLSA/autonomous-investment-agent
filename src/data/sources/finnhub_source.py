@@ -9,8 +9,7 @@ the free tier) and graceful degradation when no API key is configured.
 from __future__ import annotations
 
 import time
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
 from tenacity import (
     retry,
@@ -41,7 +40,7 @@ class FinnhubSource:
         api_key: Finnhub API key. ``None`` or empty string disables the source.
     """
 
-    def __init__(self, api_key: Optional[str] = None) -> None:
+    def __init__(self, api_key: str | None = None) -> None:
         self._api_key = api_key or ""
         self._client = None
         self._last_call_time: float = 0.0
@@ -184,9 +183,7 @@ class FinnhubSource:
             Exception: On unrecoverable Finnhub errors after retries.
         """
         if self._client is None:
-            logger.warning(
-                "finnhub_news_skipped", ticker=ticker, reason="no_client"
-            )
+            logger.warning("finnhub_news_skipped", ticker=ticker, reason="no_client")
             return []
 
         symbol = self._normalise_ticker(ticker)
@@ -198,7 +195,7 @@ class FinnhubSource:
             )
             return []
 
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         from_date = (now - timedelta(days=days_back)).strftime("%Y-%m-%d")
         to_date = now.strftime("%Y-%m-%d")
 
@@ -218,7 +215,7 @@ class FinnhubSource:
             try:
                 # Finnhub returns epoch seconds for datetime
                 ts = raw.get("datetime", 0)
-                published_at = datetime.fromtimestamp(ts, tz=timezone.utc)
+                published_at = datetime.fromtimestamp(ts, tz=UTC)
 
                 article = NewsArticle(
                     title=raw.get("headline") or "Untitled",

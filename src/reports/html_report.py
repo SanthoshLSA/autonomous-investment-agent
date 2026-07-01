@@ -14,9 +14,7 @@ from src.logger import get_logger
 logger = get_logger(__name__)
 
 
-def generate_html_report(
-    state_data: dict[str, Any], output_path: str | Path
-) -> Path:
+def generate_html_report(state_data: dict[str, Any], output_path: str | Path) -> Path:
     """Renders all compiled analysis into a responsive, premium HTML document.
 
     Args:
@@ -27,10 +25,11 @@ def generate_html_report(
         Path object pointing to the written file.
     """
     logger.info("Generating HTML report file...", path=str(output_path))
-    
+
     # Simple self-contained HTML rendering (embedded charts, layout and css)
     # Allows users to view reports locally without server attachments.
-    html_template = """<!DOCTYPE html>
+    html_template = (
+        """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -175,7 +174,7 @@ def generate_html_report(
         .badge-buy { background-color: rgba(52, 211, 153, 0.15); color: var(--success); border: 1px solid rgba(52, 211, 153, 0.3); }
         .badge-hold { background-color: rgba(251, 191, 36, 0.15); color: var(--warning); border: 1px solid rgba(251, 191, 36, 0.3); }
         .badge-sell { background-color: rgba(248, 113, 113, 0.15); color: var(--danger); border: 1px solid rgba(248, 113, 113, 0.3); }
-        
+
         .list-unstyled {
             list-style: none;
         }
@@ -196,7 +195,9 @@ def generate_html_report(
 <body>
     <header>
         <h1>Autonomous Investment Agent</h1>
-        <p>Daily Research & Rebalancing Analysis • Generated on: """ + Path(output_path).stem + """</p>
+        <p>Daily Research & Rebalancing Analysis • Generated on: """
+        + Path(output_path).stem
+        + """</p>
     </header>
 
     <div class="container">
@@ -210,13 +211,19 @@ def generate_html_report(
                 </div>
                 <div class="stat-box">
                     <div>Active Watchlist Assets</div>
-                    <div class="stat-val">""" + str(len(state_data.get("composite_scores", {}))) + """</div>
+                    <div class="stat-val">"""
+        + str(len(state_data.get("composite_scores", {})))
+        + """</div>
                 </div>
             </div>"""
+    )
     recomm = state_data.get("portfolio_recommendation", {})
     summary_data = recomm.get("portfolio_summary", "No summary provided.")
     if isinstance(summary_data, dict):
-        summary_html = "<br>".join(f"<strong>{str(k).replace('_', ' ').title()}</strong>: {str(v)}" for k, v in summary_data.items())
+        summary_html = "<br>".join(
+            f"<strong>{str(k).replace('_', ' ').title()}</strong>: {str(v)}"
+            for k, v in summary_data.items()
+        )
     else:
         summary_html = str(summary_data)
 
@@ -236,7 +243,7 @@ def generate_html_report(
                         </tr>
                     </thead>
                     <tbody>"""
-    
+
     recomm = state_data.get("portfolio_recommendation", {})
     allocations = recomm.get("allocations", {})
     for ticker, weight in allocations.items():
@@ -245,7 +252,7 @@ def generate_html_report(
             weight_str = f"{weight_val:+.2%}"
         except (ValueError, TypeError):
             weight_str = str(weight)
-            
+
         html_template += f"""
                         <tr>
                             <td><strong>{ticker}</strong></td>
@@ -262,7 +269,7 @@ def generate_html_report(
                 <h2 class="card-title">AI Adviser Rationale</h2>
                 <ul class="list-unstyled">
     """
-    
+
     rationales = recomm.get("rationale", {})
     for ticker, text in rationales.items():
         html_template += f"<li><strong>{ticker}</strong>: {str(text)}</li>"
@@ -288,13 +295,13 @@ def generate_html_report(
                 </thead>
                 <tbody>
     """
-    
+
     composite_scores = state_data.get("composite_scores", {})
     for ticker, score in composite_scores.items():
         tech = state_data.get("technical_analysis", {}).get(ticker, {})
         risk = state_data.get("risk_analysis", {}).get(ticker, {})
         sent = state_data.get("sentiment_analysis", {}).get(ticker, {})
-        
+
         signal = score["signal"]
         badge_cls = "badge-hold"
         if "buy" in signal:
@@ -336,17 +343,17 @@ def generate_html_report(
                 </tbody>
             </table>
         </div>
-        
+
         <!-- 4. Warnings -->
         <div class="card" style="border-left: 4px solid var(--danger);">
             <h2 class="card-title" style="color: var(--danger);">Caveats & Risk Warnings</h2>
             <ul class="list-unstyled">
     """
-    
+
     warnings = recomm.get("warnings", [])
     for warn in warnings:
         html_template += f"<li>{str(warn)}</li>"
-        
+
     html_template += """
             </ul>
         </div>
@@ -354,7 +361,7 @@ def generate_html_report(
 </body>
 </html>
     """
-    
+
     path = Path(output_path)
     path.write_text(html_template, encoding="utf-8")
     return path

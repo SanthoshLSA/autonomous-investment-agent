@@ -9,10 +9,9 @@ All external data is normalized into these models before downstream use.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
-
 
 __all__ = [
     "AssetPrice",
@@ -40,9 +39,7 @@ class AssetPrice(BaseModel):
     low: float = Field(..., description="Lowest price during the period")
     close: float = Field(..., description="Closing price")
     volume: int = Field(..., description="Volume traded during the period")
-    adjusted_close: Optional[float] = Field(
-        default=None, description="Split/dividend-adjusted close"
-    )
+    adjusted_close: float | None = Field(default=None, description="Split/dividend-adjusted close")
 
     model_config = {"frozen": True}
 
@@ -62,21 +59,17 @@ class AssetInfo(BaseModel):
 
     ticker: str = Field(..., description="Canonical ticker symbol")
     name: str = Field(..., description="Human-readable asset name")
-    sector: Optional[str] = Field(default=None, description="GICS sector")
-    industry: Optional[str] = Field(default=None, description="GICS industry")
-    market_cap: Optional[float] = Field(default=None, description="Market capitalisation (USD)")
-    pe_ratio: Optional[float] = Field(default=None, description="Trailing P/E ratio")
-    eps: Optional[float] = Field(default=None, description="Earnings per share (TTM)")
-    dividend_yield: Optional[float] = Field(
+    sector: str | None = Field(default=None, description="GICS sector")
+    industry: str | None = Field(default=None, description="GICS industry")
+    market_cap: float | None = Field(default=None, description="Market capitalisation (USD)")
+    pe_ratio: float | None = Field(default=None, description="Trailing P/E ratio")
+    eps: float | None = Field(default=None, description="Earnings per share (TTM)")
+    dividend_yield: float | None = Field(
         default=None, description="Trailing annual dividend yield (decimal)"
     )
-    beta: Optional[float] = Field(default=None, description="Beta vs. market benchmark")
-    fifty_two_week_high: Optional[float] = Field(
-        default=None, description="52-week high price"
-    )
-    fifty_two_week_low: Optional[float] = Field(
-        default=None, description="52-week low price"
-    )
+    beta: float | None = Field(default=None, description="Beta vs. market benchmark")
+    fifty_two_week_high: float | None = Field(default=None, description="52-week high price")
+    fifty_two_week_low: float | None = Field(default=None, description="52-week low price")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -94,10 +87,8 @@ class NewsArticle(BaseModel):
     source: str = Field(..., description="Publisher / source name")
     published_at: datetime = Field(..., description="Publication timestamp")
     url: str = Field(..., description="Canonical URL to the article")
-    description: Optional[str] = Field(
-        default=None, description="Article snippet / description"
-    )
-    sentiment_score: Optional[float] = Field(
+    description: str | None = Field(default=None, description="Article snippet / description")
+    sentiment_score: float | None = Field(
         default=None,
         description="Sentiment score in [-1.0, 1.0], populated by sentiment agent",
     )
@@ -115,16 +106,14 @@ class FetchResult(BaseModel):
     which source was used, whether it was cached, timing, and any errors.
     """
 
-    status: Literal["success", "cached", "failed"] = Field(
-        ..., description="Outcome of the fetch"
-    )
+    status: Literal["success", "cached", "failed"] = Field(..., description="Outcome of the fetch")
     data: Any = Field(default=None, description="Fetched payload (type varies)")
     timestamp: datetime = Field(
         default_factory=datetime.utcnow,
         description="When this result was created",
     )
     source_used: str = Field(..., description="Data source that produced this result")
-    error_message: Optional[str] = Field(
+    error_message: str | None = Field(
         default=None, description="Error details when status == 'failed'"
     )
 
@@ -143,15 +132,11 @@ class MarketDataBundle(BaseModel):
     """
 
     ticker: str = Field(..., description="Canonical ticker symbol")
-    prices: list[AssetPrice] = Field(
-        default_factory=list, description="Historical price bars"
-    )
-    info: Optional[AssetInfo] = Field(
+    prices: list[AssetPrice] = Field(default_factory=list, description="Historical price bars")
+    info: AssetInfo | None = Field(
         default=None, description="Fundamental / descriptive information"
     )
-    news: list[NewsArticle] = Field(
-        default_factory=list, description="Recent news articles"
-    )
+    news: list[NewsArticle] = Field(default_factory=list, description="Recent news articles")
     fetch_results: dict[str, FetchResult] = Field(
         default_factory=dict,
         description="Per-category fetch outcomes (e.g. 'prices', 'info', 'news')",

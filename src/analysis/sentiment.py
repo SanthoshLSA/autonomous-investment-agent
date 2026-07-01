@@ -9,8 +9,7 @@ single-headline and batch-level analysis with exponential time-decay weighting.
 from __future__ import annotations
 
 import math
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
@@ -20,7 +19,7 @@ from src.logger import get_logger
 logger = get_logger(__name__)
 
 # Module-level singleton – VADER is stateless & thread-safe.
-_analyzer: Optional[SentimentIntensityAnalyzer] = None
+_analyzer: SentimentIntensityAnalyzer | None = None
 
 
 def _get_analyzer() -> SentimentIntensityAnalyzer:
@@ -152,7 +151,7 @@ def analyze_news_batch(
         return neutral_default
 
     # ── Score every article ───────────────────────────────────────────────
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     scored: list[dict] = []
 
     for article in articles:
@@ -169,7 +168,7 @@ def analyze_news_batch(
             pub = article.published_at
             # Ensure timezone-aware comparison
             if pub.tzinfo is None:
-                pub = pub.replace(tzinfo=timezone.utc)
+                pub = pub.replace(tzinfo=UTC)
             days_old = max((now - pub).total_seconds() / 86400, 0.0)
         else:
             # Unknown date ⇒ assume 3 days old (moderate penalty)
@@ -194,7 +193,7 @@ def analyze_news_batch(
     if total_weight == 0:
         weighted_avg = 0.0
     else:
-        weighted_avg = sum(c * w for c, w in zip(compounds, weights)) / total_weight
+        weighted_avg = sum(c * w for c, w in zip(compounds, weights, strict=False)) / total_weight
 
     raw_avg = sum(compounds) / len(compounds)
 

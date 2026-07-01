@@ -81,7 +81,10 @@ class Rebalancer:
         }
 
     def generate_rebalance_orders(
-        self, current_weights: dict[str, float], target_weights: dict[str, float], portfolio_value: float
+        self,
+        current_weights: dict[str, float],
+        target_weights: dict[str, float],
+        portfolio_value: float,
     ) -> list[dict[str, Any]]:
         """Constructs target execution buy/sell transactions to realign portfolio.
 
@@ -99,7 +102,9 @@ class Rebalancer:
 
         for asset in drift_report["drifted_assets"]:
             ticker = asset["ticker"]
-            drift = asset["drift"]  # Positive drift means we are overweighted, Negative means underweighted
+            drift = asset[
+                "drift"
+            ]  # Positive drift means we are overweighted, Negative means underweighted
 
             # Skip tiny adjustments under 0.5% weight drift
             if asset["abs_drift"] < 0.005:
@@ -107,7 +112,7 @@ class Rebalancer:
 
             dollar_amount = drift * portfolio_value
             action = "sell" if dollar_amount > 0 else "buy"
-            
+
             orders.append(
                 {
                     "ticker": ticker,

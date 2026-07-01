@@ -12,10 +12,8 @@ import logging
 import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Optional
 
 import structlog
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Logger Setup
@@ -27,7 +25,7 @@ _configured = False
 def setup_logging(
     level: str = "INFO",
     log_format: str = "console",
-    file_path: Optional[str] = None,
+    file_path: str | None = None,
     max_file_size_mb: int = 50,
     backup_count: int = 5,
 ) -> None:

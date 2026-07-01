@@ -5,11 +5,9 @@ LangChain tools wrapping data retrieval and analysis functionality for the AI ag
 from __future__ import annotations
 
 import json
-from typing import Any
 
 from langchain_core.tools import tool
 
-from src.analysis.scoring import calculate_composite_score
 from src.analysis.sentiment import analyze_news_batch
 from src.analysis.technical import generate_signals
 from src.config import get_config
@@ -66,6 +64,7 @@ def run_technical_signals(ticker: str, prices_json: str) -> str:
     logger.info("run_technical_signals called", ticker=ticker)
     try:
         import pandas as pd
+
         raw_prices = json.loads(prices_json)
         if not raw_prices:
             return json.dumps({"error": "No price data provided"})
@@ -96,6 +95,7 @@ def analyze_news_sentiment(ticker: str, news_json: str) -> str:
     logger.info("analyze_news_sentiment called", ticker=ticker)
     try:
         from src.data.models import NewsArticle
+
         raw_news = json.loads(news_json)
         articles = [NewsArticle(**art) for art in raw_news]
 

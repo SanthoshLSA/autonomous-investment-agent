@@ -8,7 +8,7 @@ breakdown, and human-readable reasoning.
 
 from __future__ import annotations
 
-from typing import Optional
+from datetime import UTC
 
 import pandas as pd
 
@@ -243,10 +243,10 @@ def generate_asset_report(
     prices: pd.Series,
     news: list[NewsArticle],
     market_prices: pd.Series,
-    analysis_config: Optional[AnalysisConfig] = None,
-    risk_config: Optional[RiskConfig] = None,
-    sentiment_config: Optional[SentimentConfig] = None,
-    scoring_config: Optional[ScoringConfig] = None,
+    analysis_config: AnalysisConfig | None = None,
+    risk_config: RiskConfig | None = None,
+    sentiment_config: SentimentConfig | None = None,
+    scoring_config: ScoringConfig | None = None,
 ) -> dict:
     """Run the full analysis pipeline for a single asset.
 
@@ -319,7 +319,7 @@ def generate_asset_report(
         scoring_config=sc_cfg,
     )
 
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     report = {
         "ticker": ticker,
@@ -328,7 +328,7 @@ def generate_asset_report(
         "risk": risk_metrics,
         "sentiment": sentiment_data,
         "composite": composite,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
     logger.info(
