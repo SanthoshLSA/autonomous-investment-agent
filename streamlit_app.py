@@ -238,6 +238,15 @@ if st.session_state.approval_pending and st.session_state.analysis_results:
 # ── Render Analytics Panels ──────────────────────────────────────────────────
 if st.session_state.analysis_results:
     state = st.session_state.analysis_results
+
+    # Show error logs for debugging
+    errors = state.get("error_log", [])
+    if errors:
+        with st.expander("⚠️ System Debug & Connection Logs"):
+            for err in errors:
+                st.error(err)
+        st.markdown("---")
+
     # Downloadable PDF Report Button
     if st.session_state.report_paths and "pdf" in st.session_state.report_paths:
         pdf_path = st.session_state.report_paths["pdf"]
