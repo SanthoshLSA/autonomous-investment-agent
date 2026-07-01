@@ -13,7 +13,6 @@ dependencies = [
     "pyyaml>=6.0",
     "pydantic>=2.0",
     "structlog>=24.0",
-
     # Data Collection
     "yfinance>=0.2.30",
     "newsapi-python>=0.2.7",
@@ -21,39 +20,33 @@ dependencies = [
     "requests>=2.31",
     "tenacity>=8.2",
     "aiohttp>=3.9",
-
     # Analysis
     "pandas>=2.1",
     "numpy>=1.26",
     "scipy>=1.11",
     "pandas-ta-classic>=0.6",
     "vaderSentiment>=3.3",
-
     # Agents (LangGraph + Ollama)
     "langgraph>=1.2",
     "langchain>=1.3",
     "langchain-ollama>=1.0",
     "langchain-openai>=0.3",
     "langchain-community>=0.3",
-
     # Portfolio Optimization
     "PyPortfolioOpt>=1.5",
     "vectorbt>=1.0",
-
     # Reports & Visualization
     "plotly>=6.0",
     "kaleido>=1.0",
-    "reportlab>=4.0",
+    "reportlab<4.1.0",
     "jinja2>=3.1",
-
     # Dashboard
     "streamlit>=1.30",
-
     # Scheduling
     "APScheduler>=3.10,<4.0",
-
     # CLI
     "click>=8.1",
+    "xhtml2pdf>=0.2.14",
 ]
 
 [project.optional-dependencies]

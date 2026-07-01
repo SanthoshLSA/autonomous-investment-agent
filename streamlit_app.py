@@ -47,6 +47,8 @@ if "analysis_results" not in st.session_state:
     st.session_state.analysis_results = None
 if "approval_pending" not in st.session_state:
     st.session_state.approval_pending = False
+if "report_paths" not in st.session_state:
+    st.session_state.report_paths = None
 
 
 # Custom CSS to match santhoshlsa.vercel.app visual layout
@@ -207,10 +209,11 @@ if st.session_state.approval_pending and st.session_state.analysis_results:
                     )
                     # Generate daily report HTML
                     rep_paths = generate_daily_report(final_state)
+                    st.session_state.report_paths = rep_paths
                     
                     st.session_state.analysis_results = final_state
                     st.session_state.approval_pending = False
-                    st.success(f"Approved! Report saved to: {rep_paths.get('html')}")
+                    st.success("Approved! Daily HTML and PDF reports generated successfully.")
                 except Exception as e:
                     st.error(f"Error resuming graph: {str(e)}")
                     
@@ -230,7 +233,21 @@ if st.session_state.approval_pending and st.session_state.analysis_results:
 # ── Render Analytics Panels ──────────────────────────────────────────────────
 if st.session_state.analysis_results:
     state = st.session_state.analysis_results
-    
+    # Downloadable PDF Report Button
+    if st.session_state.report_paths and "pdf" in st.session_state.report_paths:
+        pdf_path = st.session_state.report_paths["pdf"]
+        if os.path.exists(pdf_path):
+            with open(pdf_path, "rb") as f:
+                pdf_bytes = f.read()
+            st.download_button(
+                label="📥 Download PDF Report Document",
+                data=pdf_bytes,
+                file_name=f"Daily_Investment_Report_{datetime.now().strftime('%Y%m%d')}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+            )
+            st.markdown("---")
+
     tab1, tab2, tab3 = st.tabs(["📊 Target Allocations", "🔍 Asset Analysis", "📈 Backtesting Validation"])
     
     # 1. Allocation Page
